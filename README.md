@@ -21,3 +21,5 @@ Generating Statistics - Users with the "management" role can generate key statis
 Feel free to reach out if you encounter any issues or have questions about using the Project.
 
 Thank you for taking the time to test the project.
+
+https://github.com/scott275275/Project.git
