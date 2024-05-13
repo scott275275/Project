@@ -2,12 +2,10 @@ Project ReadMe
 
 How to run the program
 1 - Ensure you have Python installed on your system.  You can download Python from python.org
-2 - Install the required packages by running the following command:
-pip install tk
+2 - Install the required packages by running the following command:  pip install tk
 3 - Download the 'Project.py' file.
 4 - Open a terminal or command prompt in the directory where 'Project.py' is located
-5 Run the program using the following command:
-python Project.py Project_credentials.csv PA3_patient.txt
+5 - Run the program using the following command:  python Project.py Project_credentials.csv PA3_patient.txt
 
 Description
 The Project is a Python program that provides a graphical interface for managing patients, visits, and key statistics in a hospital setting.  It includes functionalities for user authentication, role-based access control, data loading from extern files, logging user actions, and generating key statistics reports.
