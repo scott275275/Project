@@ -19,3 +19,5 @@ Logging - User actions, including login attempts and successful operations, are 
 Generating Statistics - Users with the "management" role can generate key statistics reports.  These reports include trends in insurance types, races, genders, and ethnicities among patients.
 
 Feel free to reach out if you encounter any issues or have questions about using the Project.
+
+Thank you for taking the time to test the project.
