@@ -35,7 +35,7 @@ class UserInterface:
         if user:
             self.show_actions(user)
         else:
-            print("Invalid username or password.")
+            print("Invalid username or password.  Please try again.")
             
     def authenticate_user(self, username, password):
         if username == "admin" and password == "admin":
