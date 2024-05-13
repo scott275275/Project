@@ -1,0 +1,412 @@
+import datetime
+import sys
+from collections import defaultdict
+from tkinter import Tk, Label, Button, Entry, StringVar, END
+
+class User:
+    def __init__(self, username, password, role):
+        self.username = username
+        self.password = password
+        self.role = role
+        
+class UserInterface:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Hospital Management System")
+        self.root.geometry("400x300")
+        
+        self.label_username = Label(root, text="Username:")
+        self.label_username.pack()
+        self.entry_username = Entry(root)
+        self.entry_username.pack()
+        
+        self.label_password = Label(root, text="Password:")
+        self.label_password.pack()
+        self.entry_password = Entry(root, show="*")
+        self.entry_password.pack()
+        
+        self.button_login = Button(root, text="Log In", command=self.login)
+        self.button_login.pack()
+        
+    def login(self):
+        username = self.entry_username.get()
+        password = self.entry_password.get()
+        user = self.authenticate_user(username, password)
+        if user:
+            self.show_actions(user)
+        else:
+            print("Invalid username or password.")
+            
+    def authenticate_user(self, username, password):
+        if username == "admin" and password == "admin":
+            return User(username, password, "admin")
+        if username == "clinician" and password == "clinician":
+            return User(username, password, "clinician")
+        if username == "nurse" and password == "nurse":
+            return User(username, password, "nurse")
+        if username == "management" and password == "management":
+            return User(username, password, "management")
+        else:
+            return None
+                        
+    def show_actions(self, user):
+        self.clear_login_widgets()
+        
+        self.label_username.destroy()
+        self.label_password.destroy()
+        self.entry_username.destroy()
+        self.entry_password.destroy()
+        self.button_login.destroy()
+        
+        self.label_welcome = Label(self.root, text=f"Welcome, {user.username}!")
+        self.label_welcome.pack()
+        
+        if user.role in ["admin"]:
+            self.button_count_visits = Button(self.root, text="Count Visits", command=self.count_visits)
+            self.button_count_visits.pack()
+        elif user.role in ["management"]:
+            self.button_generate_stats = Button(self.root, text="Generate Key Statistics", command=self.generate_stats)
+            self.button_generate_stats.pack()
+        elif user.role in ["clinician", "nurse"]:
+            self.button_retrieve_patient = Button(self.root, text="Retrieve Patient", command=self.retrieve_patient)
+            self.button_retrieve_patient.pack()
+            self.button_add_patient = Button(self.root, text="Add Patient", command=self.add_patient)
+            self.button_add_patient.pack()
+            self.button_remove_patient = Button(self.root, text="Remove Patient", command=self.remove_patient)
+            self.button_remove_patient.pack()
+            self.button_count_visits = Button(self.root, text="Count Visits", command=self.count_visits)
+            self.button_count_visits.pack()
+        
+        self.button_exit = Button(self.root, text="Exit", command=self.root.quit)
+        self.button_exit.pack()
+    
+    def clear_login_widgets(self):
+        self.label_username.destroy()
+        self.label_password.destroy()
+        self.entry_username.destroy()
+        self.entry_password.destroy()
+        self.button_login.destroy()
+                        
+    def display_message(self, message):
+        self.label_message = Label(self.root, text=message)
+        self.label_message.pack()
+    
+    def generate_stats(self):
+        self.display_message("Generating key statistics...")
+    
+    def retrieve_patient(self):
+        patient_id = self.get_input("Enter Patient ID:")
+        if patient_id:
+            if patient_id in self.patient_records:
+                patient_info = self.patient_records[patient_id].retrieve_patient_info(user)
+                self.display_patient_info(patient_info)
+            else:
+                self.display_message("Patient not found in records.")
+                        
+    def add_patient(self):
+        patient_id = self.get_input("Enter Patient ID:")
+        if patient_id:
+            visit_time = self.get_input("Enter Visit Time (yyyy-mm-dd HH:MM):")
+            visit_department = self.get_input("Enter Visit Department:")
+            gender = self.get_input("Enter Gender:")
+            race = self.get_input("Enter Race:")
+            age = self.get_input("Enter Age:")
+            ethnicity = self.get_input("Enter Ethnicity:")
+            insurance = self.get_input("Enter Insurance:")
+            zip_code = self.get_input("Enter Zip Code:")
+            chief_complaint = self.get_input("Enter Chief Complaint:")
+            note_id = self.get_input("Enter Note ID:")
+            note_type = self.get_input("Enter Note Type:")
+            visit = Visit(patient_id, visit_time, visit_department, gender, race, age, ethnicity, insurance, zip_code, chief_complaint, note_id, note_type)
+            if patient_id in self.patient_records:
+                self.patient_records[patient_id].add_visit(visit)
+            else:
+                patient_record = PatientRecord(patient_id)
+                patient_record.add_visit(visit)
+                self.patient_records[patient_id] = patient_record
+            self.display_message("Patient added successfully.")
+                        
+    def remove_patient(self):
+        patient_id = self.get_input("Enter Patient ID:")
+        if patient_id:
+            if patient_id in self.patient_records:
+                del self.patient_records[patient_id]
+                self.display_message(f"Patient {patient_id} removed successfully.")
+            else:
+                self.display_message("Patient not found in records.")
+                        
+    def count_visits(self):
+        date = self.get_input("Enter Date (yyyy-mm-dd):")
+        if date:
+            total_visits = sum(1 for patient_record in self.patient_records.values() for visit in patient_records.visits if visit.visit_time.startswith(date))
+            self.display_message(f"Total visits on {date}: {total_visits}")
+            print("Date entered:", date)
+                                  
+    def get_input(self, prompt):
+        input_var = StringVar()
+        entry = Entry(self.root, textvariable=input_var)
+        Label(self.root, text=prompt).pack()
+        entry.pack()
+        entry.focus_set()
+        self.root.wait_window(entry)
+        return input_var.get()
+    
+    def display_patient_info(self, patient_info):
+        print(patient_info)
+                        
+root = Tk()
+app = UserInterface(root)
+root.mainloop()
+
+class Visit:
+    def __init__(self, visit_id, visit_time, visit_department, gender, race, age, ethnicity, insurance, zip_code, chief_complaint, note_id, note_type):
+        self.visit_id = visit_id
+        self.visit_time = visit_time
+        self.visit_department = visit_department
+        self.gender = gender
+        self.race = race
+        self.age = age
+        self.ethnicity = ethnicity
+        self.insurance = insurance
+        self.zip_code = zip_code
+        self.chief_complaint = chief_complaint
+        self.note_id = note_id
+        self.note_type = note_type
+
+class PatientRecord:
+    def __init__(self, patient_id):
+        self.patient_id = patient_id
+        self.visits = []
+       
+    def add_visit(self, visit):
+        self.visits.append(visit)
+       
+    def remove_visits(self):
+        self.visits = []
+       
+    def retrieve_patient_info(self, user):
+        if user.role == 'clinician' or user.role == 'nurse':
+            return {
+                'Patient_ID': self.patient_id,
+                'Visits': [{
+                    'Visit_ID': visit.visit_id,
+                    'Visit_time': visit.visit_time,
+                    'Visit_department': visit.visit_department,
+                    'Gender': visit.gender,
+                    'Race': visit.race,
+                    'Age': visit.age,
+                    'Ethnicity': visit.ethnicity,
+                    'Insurance': visit.insurance,
+                    'Zip_code': visit.zip_code,
+                    'Chief_complaint': visit.chief_complaint,
+                    'Note_ID': visit.note_id,
+                    'Note_type': visit.note_type
+                } for visit in self.visits]
+            }
+        else:
+            return "Unauthorized access.  Please contact an administrator."
+    
+class PatientManagementSystem:
+    def __init__(self):
+        self.patient_records = {}
+        self.users = {}
+    
+    def add_user(self, username, password, role):
+        self.users[username] = User(username, password, role)
+    
+    def authenticate_user(self, username, password):
+        if username in self.users and self.users[username].password == password:
+            return self.users[username]
+        else:
+            return None
+       
+    def add_patient (self, user, patient_id, visit_time, visit_department, gender, race, age, ethnicity, insurance, zip_code, chief_complaint, note_id, note_type):
+        if user.role == 'clinician' or user.role == 'nurse':
+            if patient_id in self.patient_records:
+                visit_id = str(datetime.datetime.now().timestamp()).replace('.', '')
+                visit = Visit(visit_id, visit_time, visit_department, gender, race, age, ethnicity, insurance, zip_code, chief_complaint, note_id, note_type)
+                self.patient_records[patient_id].add_visit(visit)
+            else:
+                print("Patient was not found in the records.")
+        else:
+            print("Unauthorized access.")
+           
+    def remove_patient(self, user, patient_id):
+        if user.role == 'clinician' or user.role == 'nurse':
+            if patient_id in self.patient_records:
+                del self.patient_records[patient_id]
+                print(f"Patient {patient_id} was removed successfully.")
+            else:
+                print("Patient was not found in the records.")
+        else:
+            print("Unauthorized access.")
+       
+    def retrieve_patient(self, user, patient_id):
+        if user.role == 'clinician' or user.role == 'nurse':
+            if patient_id in self.patient_records:
+                patient_info = self.patient_records[patient_id].retrieve_patient_info(user)
+                print(patient_info)
+            else:
+                print("Patient was not found in the records.")
+        else:
+            print("Unauthorized access.")
+           
+    def count_visits(self, user, date):
+        if user.role == 'admin':
+            total_visits = sum(1 for patient_record in self.patient_records.values() for visit in patient_record.visits if visit.visit_time == date)
+            print(f"Total visits on {date}: {total_visits}")
+        else:
+            print("Unauthorized access.")
+            
+    def generate_statistics(self, user):
+        if user.role == 'management':
+            print("Generating key statistics report...\n")
+            self.calculate_insurance_trend()
+            self.calculate_race_trend()
+            self.calculate_gender_trend()
+            self.calculate_ethnicity_trend()
+            print("\nKey statistics report generated successfully.")
+        else:
+            print("Unauthorized access.")
+            
+    def calculate_insurance_trend(self):
+        insurance_counts = defaultdict(int)
+        for patient_record in self.patient_records.values():
+            for visit in patient_record.visits:
+                insurance_type = visit.insurance
+                insurance_counts[insurance_type] += 1
+        print("\nTemporal Trend of Number of Patients with Different Insurances:")
+        for insurance_type, count in insurance_counts.items():
+            print(f"{insurance_type}: {count} patients")
+            
+    def calculate_race_trend(self):
+        race_counts = defaultdict(int)
+        for patient_record in self.patient_records.values():
+            for visit in patient_record.visits:
+                race_counts[visit.race] += 1
+        print("\nTemporal Trend of Number of Patients with Different Races:")
+        for race, count in race_counts.items():
+            print(f"{race}: {count} patients")
+            
+    def calculate_gender_trend(self):
+        gender_counts = defaultdict(int)
+        for patient_record in self.patient_records.values():
+            for visit in patient_record.visits:
+                gender_counts[visit.gender] += 1
+        print("\nTemporal Trend of Number of Patients with Different Genders:")
+        for gender, count in gender_counts.items():
+            print(f"{gender}: {count} patients")
+            
+    def calculate_ethnicity_trend(self):
+        ethnicity_counts = defaultdict(int)
+        for patient_record in self.patient_records.values():
+            for visit in patient_record.visits:
+                ethnicity_counts[visit.ethnicity] += 1
+        print("\nTemporal Trend of Number of Patients with Different Ethnicities:")
+        for ethnicity, count in ethnicity_counts.items():
+            print(f"{ethnicity}: {count} patients")
+    
+    def update_patient_file(self, output_file):
+        with open(output_file, 'w') as file:
+            for patient_id, patient_record in self.patient_records.items():
+                for visit in patient_record.visits:
+                    file.write(f"{patient_id},{visit.visit_id},{visit.visit_time},{visit.visit_department},"
+                               f"{visit.gender},{visit.race},{visit.age},{visit.ethnicity},"
+                               f"{visit.insurance},{visit.zip_code},{visit.chief_complaint},{visit.note_id},"
+                               f"{visit.note_type}\n")
+    
+    def log_user_action(self, username, role, action, success, output_file):
+        with open(output_file, 'a') as file:
+            if success:
+                file.write(f"Username: {username}, Role: {role}, Action: {action}, Status: Successful\n")
+            else:
+                file.write(f"Username: {username}, Role: {role}, Action: {action}, Status: Failed Login Attempt\n")
+
+def load_credentials(patient_system, Project_credentials):
+    with open(Project_credentials, 'r') as file:
+        for line in file:
+            username, password, role = line.strip().split(',')
+            patient_system.add_user(username, password, role)
+
+def load_patient_data(patient_system, PA3_patient):
+    with open(PA3_patient, 'r') as file:
+        for line in file:
+            data = line.strip().split(',')
+            patient_id = data[0]
+            visit_id = data[1]
+            visit_time = data[2]
+            visit_department = data[3]
+            gender = data[4]
+            race = data[5]
+            age = data[6]
+            ethnicity = data[7]
+            insurance = data[8]
+            zip_code = data[9]
+            chief_complaint = data[10]
+            note_id = data[11]
+            note_type = data[12]
+            
+            visit = Visit(visit_id, visit_time, visit_department, gender, race, age, ethnicity, insurance, zip_code, chief_complaint, note_id, note_type)
+            if patient_id in patient_system.patient_records:
+                patient_system.patient_records[patient_id].add_visit(visit)
+            else:
+                patient_record = PatientRecord(patient_id)
+                patient_record.add_visit(visit)
+                patient_system.patient_records[patient_id] = patient_record
+                
+def main(Project_credentials, PA3_patient):
+    patient_system = PatientManagementSystem()
+    load_credentials(patient_system, Project_credentials)
+    load_patient_data(patient_system, PA3_patient)
+    
+    while True:
+        username = input("Enter Username: ")
+        password = input("Enter Password: ")
+        user = patient_system.authenticate_user(username, password)
+        if user:
+            action = input("Choose an action (Add_patient/Remove_patient/Retrieve_patient/Count_visits/Generate_statistics): ").lower()
+            if action == "stop":
+                break
+                
+            if action == "add_patient":
+                patient_id = input("Enter Patient_ID: ")
+                visit_time = input("Enter Visit_time: ")
+                visit_department = input("Enter Visit_department: ")
+                gender = input("Enter Gender: ")
+                race = input("Enter Race: ")
+                age = input("Enter Age: ")
+                ethnicity = input("Enter Ethnicity: ")
+                insurance = input("Enter Insurance: ")
+                zip_code = input("Enter Zip_code: ")
+                chief_complaint = input("Enter Chief_complaint: ")
+                note_id = input("Enter Note_ID: ")
+                note_type = input("Enter Note_type: ")
+                patient_system.add_patient(user, patient_id, visit_time, visit_department, gender, race, age, ethnicity, insurance, zip_code, chief_complaint, note_id, note_type)
+            
+            elif action == "remove_patient":
+                patient_id = input("Enter Patient_ID: ")
+                patient_system.remove_patient(user, patient_id)
+                     
+            elif action == "retrieve_patient":
+                patient_id = input("Enter Patient_ID: ")
+                patient_system.retrieve_patient(user, patient_id)
+                     
+            elif action == "count_visits":
+                date = input("Enter date (yyyy-mm-dd): ")
+                patient_system.count_visits(user, date)
+            
+            elif action == "generate_statistics":
+                patient_system.generate_statistics(user)
+                break
+                
+            else:
+                print("This action is invalid.  Please try again.")
+                     
+if __name__ == "__main__":
+    if len(sys.argv) != 3:
+        print("Usage: python Project.py Project_credentials.csv PA3_patient.txt")
+        sys.exit(1)
+   
+    Project_credentials = sys.argv[1]
+    PA3_patient = sys.argv[2]
+    main(Project_credentials, PA3_patient)
