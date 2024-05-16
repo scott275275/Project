@@ -1,0 +1,5 @@
+78541,10001,2024-03-01,ER,Male,White,64,Non-Hispanic,Medicare,54971,Chest pain,86751,Cardiology
+78542,10002,2024-03-02,OR,Female,Black,62,Unknown,Medicaid,54971,Neck pain,86752,Pathology
+78543,10003,2024-03-03,ICU,Female,Asian,39,Other,Unknown,54971,Back pain,86753,Radiology
+78544,10004,2024-03-04,ER,Male,Pacific Islanders,38,Hispanic,None,53719,Shoulder pain,86754,Oncology
+78545,10005,2024-03-05,OR,Male,Pacific Islanders,36,Hispanic,None,53154,Leg pain,86755,Dermatology
